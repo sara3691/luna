@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { StepProps } from '../../types';
-import { GlassContainer } from '../ui/GlassContainer';
-import { Search, Sparkles, X } from 'lucide-react';
+import { Search, Sparkles, X, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Popular courses by stream
