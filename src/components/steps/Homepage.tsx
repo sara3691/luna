@@ -10,62 +10,43 @@ export const Homepage: React.FC<HomepageProps> = ({ onStart }) => {
     return (
         <div className="flex flex-col -mt-24 md:-mt-32">
             {/* Hero Section */}
-            <section className="py-12 md:py-32 px-4 bg-white dark:bg-slate-950 transition-colors duration-300">
-                <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-10 md:gap-16">
-                    <motion.div
-                        initial={{ opacity: 0, x: -50 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.8 }}
-                        className="flex-1 text-center md:text-left order-2 md:order-1"
-                    >
-                        <div className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 text-[10px] md:text-sm font-bold mb-6">
-                            <Star size={14} fill="currentColor" />
-                            <span>#1 AI Career Advisor for Students</span>
-                        </div>
-                        <h1 className="text-3xl md:text-7xl font-extrabold text-slate-900 dark:text-white leading-tight mb-4 md:mb-6">
-                            LUNA <span className="gradient-text">AI</span>
-                        </h1>
-                        <p className="text-sm md:text-xl font-bold text-indigo-600 dark:text-indigo-400 mb-4 tracking-wide uppercase">
-                            Moon Light for Your Career Path
-                        </p>
-                        <p className="text-sm md:text-xl text-soft dark:text-slate-400 mb-8 md:mb-10 max-w-2xl leading-relaxed mx-auto md:mx-0">
-                            Discover the clear, glowing path to your future. Advanced AI illuminates personalized career, college, and scholarship recommendations tailored for you.
-                        </p>
-                        <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4">
-                            <button
-                                onClick={onStart}
-                                className="btn-primary flex items-center justify-center gap-3 w-full sm:w-auto min-h-[50px] md:min-h-[60px]"
-                            >
-                                Start Assessment
-                                <ArrowRight size={20} />
-                            </button>
-                            <a
-                                href="#features"
-                                className="px-8 py-3 text-slate-600 dark:text-slate-400 font-bold hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors text-sm md:text-base"
-                            >
-                                Explore Features
-                            </a>
-                        </div>
-                    </motion.div>
-
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.8 }}
-                        className="flex-1 order-1 md:order-2 w-full max-w-xs md:max-w-none mx-auto"
-                    >
-                        <div className="relative">
-                            <div className="absolute inset-0 bg-indigo-600 blur-[40px] md:blur-[100px] rounded-full opacity-10 md:opacity-20 -z-10 animate-pulse"></div>
-                            <img
-                                src="/hero.png"
-                                alt="LUNA AI Analysis"
-                                className="w-full h-auto drop-shadow-2xl rounded-2xl md:rounded-3xl"
-                            />
-                        </div>
-                    </motion.div>
-                </div>
+            <section className="py-20 md:py-40 px-4 bg-white dark:bg-slate-950 transition-colors duration-300 flex flex-col items-center">
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.8 }}
+                    className="max-w-4xl text-center"
+                >
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 text-[10px] md:text-sm font-bold mb-6">
+                        <Star size={14} fill="currentColor" />
+                        <span>#1 AI Career Advisor for Students</span>
+                    </div>
+                    <h1 className="text-4xl md:text-8xl font-extrabold text-slate-900 dark:text-white leading-tight mb-4 md:mb-8">
+                        LUNA <span className="gradient-text">AI</span>
+                    </h1>
+                    <p className="text-base md:text-2xl font-bold text-indigo-600 dark:text-indigo-400 mb-6 tracking-wide uppercase">
+                        Moon Light for Your Career Path
+                    </p>
+                    <p className="text-sm md:text-xl text-soft dark:text-slate-400 mb-10 md:mb-12 max-w-2xl leading-relaxed mx-auto">
+                        Discover the clear, glowing path to your future. Advanced AI illuminates personalized career, college, and scholarship recommendations tailored for you.
+                    </p>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+                        <button
+                            onClick={onStart}
+                            className="btn-primary flex items-center justify-center gap-3 w-full sm:w-auto min-h-[50px] md:min-h-[60px]"
+                        >
+                            Start Assessment
+                            <ArrowRight size={20} />
+                        </button>
+                        <a
+                            href="#features"
+                            className="px-8 py-3 text-slate-600 dark:text-slate-400 font-bold hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors text-sm md:text-base border-b-2 border-transparent hover:border-indigo-600"
+                        >
+                            Explore Features
+                        </a>
+                    </div>
+                </motion.div>
             </section>
 
             {/* Features Section */}
@@ -133,7 +114,7 @@ export const Homepage: React.FC<HomepageProps> = ({ onStart }) => {
             {/* Results CTA */}
             <section className="py-12 md:py-24 px-6 md:px-4 bg-indigo-600 rounded-[2rem] md:rounded-[3rem] mx-4 mb-12 md:mb-20 overflow-hidden relative shadow-2xl">
                 <div className="absolute top-0 right-0 w-48 md:w-96 h-48 md:h-96 bg-white opacity-5 rounded-full -mr-12 -mt-12 md:-mr-20 md:-mt-20"></div>
-                
+
                 <div className="max-w-4xl mx-auto text-center relative z-10 text-white">
                     <h2 className="text-2xl md:text-5xl font-extrabold mb-4 md:mb-8 tracking-tight leading-tight">Ready to illuminate your potential?</h2>
                     <p className="text-indigo-100 text-sm md:text-lg mb-8 md:mb-12 max-w-2xl mx-auto leading-relaxed opacity-90">

@@ -57,6 +57,11 @@ function App() {
 
     useEffect(() => {
         document.documentElement.setAttribute('data-theme', theme);
+        if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
         localStorage.setItem('theme', theme);
     }, [theme]);
 
@@ -163,13 +168,12 @@ function App() {
         <div className="min-h-screen font-sans selection:bg-indigo-100 selection:text-indigo-900 transition-colors duration-300 overflow-x-hidden">
             {/* Header / Navbar */}
             <header className="sticky-nav py-3 md:py-4 px-4 md:px-12 flex justify-between items-center backdrop-blur-md">
-                <div className="flex items-center gap-2 cursor-pointer" onClick={() => { handleRestart(); setIsMenuOpen(false); }}>
-                    <div className="w-8 h-8 md:w-10 md:h-10 bg-indigo-600 rounded-lg md:rounded-xl flex items-center justify-center text-white font-bold text-lg md:text-xl shadow-lg shadow-indigo-200 dark:shadow-indigo-900/20">
-                        L
-                    </div>
-                    <span className="text-lg md:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-                        LUNA <span className="text-indigo-600">AI</span>
-                    </span>
+                <div className="flex items-center cursor-pointer" onClick={() => { handleRestart(); setIsMenuOpen(false); }}>
+                    <img
+                        src={theme === 'light' ? "/luna_light.png" : "/luna_dark.png"}
+                        className="h-10 md:h-11 w-auto object-contain transition-all duration-300"
+                        alt="Luna AI"
+                    />
                 </div>
 
                 <nav className="flex items-center gap-2 md:gap-10">
@@ -330,9 +334,8 @@ function App() {
             <footer className="py-16 bg-slate-900 text-white">
                 <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-12">
                     <div className="space-y-4">
-                        <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">L</div>
-                            <span className="text-xl font-bold">LUNA AI</span>
+                        <div className="flex items-center">
+                            <img src="/luna_dark.png" className="h-10 w-auto object-contain" alt="Luna AI" />
                         </div>
                         <p className="text-slate-400 text-sm leading-relaxed">
                             Empowering students through intelligent AI-driven career guidance and academic roadmaps.
