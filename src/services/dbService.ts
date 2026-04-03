@@ -10,7 +10,7 @@ const supabase = (supabaseUrl && supabaseAnonKey)
     : null;
 
 // Backend API URL
-const BACKEND_URL = 'http://localhost:5000/api';
+const BACKEND_URL = 'https://luna-e7l4.onrender.com/api';
 
 // Helper for backend calls (Silent failure to maintain UI stability)
 const callBackend = async (endpoint: string, method: string, data: any = {}) => {
