@@ -100,7 +100,7 @@ export const db = {
                     created_at: new Date() 
                 }]);
             if (error) throw error;
-            return { ...userData, ...data };
+            return { ...userData, ...(Array.isArray(data) ? data[0] : (data || {})) };
         }
         // LocalStorage fallback
         return mockDb.registerUser(userData);
