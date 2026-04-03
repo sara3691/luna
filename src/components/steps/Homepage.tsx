@@ -23,13 +23,13 @@ export const Homepage: React.FC<HomepageProps> = ({ onStart }) => {
                         <span>#1 AI Career Advisor for Students</span>
                     </div>
                     <h1 className="text-4xl md:text-8xl font-extrabold text-slate-900 dark:text-white leading-tight mb-4 md:mb-8">
-                        LUNA <span className="gradient-text">AI</span>
+                        CAREER <span className="gradient-text">COMPASS</span>
                     </h1>
                     <p className="text-base md:text-2xl font-bold text-indigo-600 dark:text-indigo-400 mb-6 tracking-wide uppercase">
-                        Moon Light for Your Career Path
+                        Guiding Your Path to Success
                     </p>
                     <p className="text-sm md:text-xl text-soft dark:text-slate-400 mb-10 md:mb-12 max-w-2xl leading-relaxed mx-auto">
-                        Discover the clear, glowing path to your future. Advanced AI illuminates personalized career, college, and scholarship recommendations tailored for you.
+                        Navigate the path to your future with confidence. Advanced AI provides personalized career, college, and scholarship recommendations tailored just for you.
                     </p>
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
                         <button
@@ -118,7 +118,7 @@ export const Homepage: React.FC<HomepageProps> = ({ onStart }) => {
                 <div className="max-w-4xl mx-auto text-center relative z-10 text-white">
                     <h2 className="text-2xl md:text-5xl font-extrabold mb-4 md:mb-8 tracking-tight leading-tight">Ready to illuminate your potential?</h2>
                     <p className="text-indigo-100 text-sm md:text-lg mb-8 md:mb-12 max-w-2xl mx-auto leading-relaxed opacity-90">
-                        Join 2,000+ students charting their academic journey with LUNA AI.
+                        Join 2,000+ students charting their academic journey with CAREER COMPASS.
                     </p>
                     <button
                         onClick={onStart}

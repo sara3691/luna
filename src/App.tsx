@@ -14,7 +14,11 @@ import { getCollegeRecommendations } from './services/collegeService';
 import { getGroqCollegeRecommendations } from './services/groqService';
 import { Stepper } from './components/ui/Stepper';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, Zap, Moon, Sun, Menu, X as CloseIcon } from 'lucide-react';
+import { db } from './services/dbService';
+import { Loader2, Zap, Moon, Sun, Menu, X as CloseIcon, User } from 'lucide-react';
+import { Login } from './components/auth/Login';
+import { AdminLogin } from './components/admin/AdminLogin';
+import { AdminDashboard } from './components/admin/AdminDashboard';
 
 const initialUserData: UserData = {
     educationBoard: '',
@@ -39,7 +43,8 @@ const initialUserData: UserData = {
 const TOTAL_FORM_STEPS = 4;
 
 function App() {
-    const [step, setStep] = useState(0);
+    const [step, setStep] = useState(-1);
+    const [user, setUser] = useState<any>(null);
     const [userData, setUserData] = useState<UserData>(initialUserData);
     const [loading, setLoading] = useState(false);
     const [loadingMsg, setLoadingMsg] = useState('Analyzing your profile...');
@@ -54,6 +59,8 @@ function App() {
     const [collegesLoading, setCollegesLoading] = useState(false);
     const [collegesError, setCollegesError] = useState<string | null>(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isAdminMode, setIsAdminMode] = useState(false);
+    const [adminUser, setAdminUser] = useState<any>(null);
 
     useEffect(() => {
         document.documentElement.setAttribute('data-theme', theme);
@@ -138,6 +145,13 @@ function App() {
             setRecommendations(results);
             if (results.length > 0) {
                 setUserData(prev => ({ ...prev, selectedCourse: results[0].title }));
+                // Save to Database if user is logged in
+                if (user?.email) {
+                    db.saveCareerAssessment(user.email, {
+                        recommendations: results,
+                        profile: userData
+                    }).catch(err => console.error("Failed to save assessment:", err));
+                }
             }
             setIsFallback(false);
             setStep(5);
@@ -172,8 +186,9 @@ function App() {
                     <img
                         src={theme === 'light' ? "/luna_light.png" : "/luna_dark.png"}
                         className="h-10 md:h-11 w-auto object-contain transition-all duration-300"
-                        alt="Luna AI"
+                        alt="Career Compass"
                     />
+                    <span className="hidden md:block ml-3 text-xl font-black gradient-text">Career Compass</span>
                 </div>
 
                 <nav className="flex items-center gap-2 md:gap-10">
@@ -182,6 +197,15 @@ function App() {
                         <a href="#features" className="font-semibold text-slate-600 dark:text-slate-400 hover:text-indigo-600 transition-colors">Features</a>
                         <a href="#" className="font-semibold text-slate-600 dark:text-slate-400 hover:text-indigo-600 transition-colors">About</a>
                     </div>
+
+                    {user && (
+                        <div className="hidden lg:flex items-center gap-3 px-4 py-2 bg-slate-100 dark:bg-slate-800 rounded-xl mr-2">
+                            <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-xs">
+                                {user.name?.[0].toUpperCase()}
+                            </div>
+                            <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{user.name}</span>
+                        </div>
+                    )}
 
                     <div className="flex items-center gap-2">
                         <button
@@ -232,7 +256,16 @@ function App() {
             </header>
 
             <main className="pt-24 md:pt-32 pb-10 md:pb-20">
-                {loading ? (
+                {isAdminMode ? (
+                    adminUser ? (
+                        <AdminDashboard onLogout={() => { setAdminUser(null); setIsAdminMode(false); }} />
+                    ) : (
+                        <AdminLogin 
+                            onLogin={(data) => setAdminUser(data)} 
+                            onBack={() => setIsAdminMode(false)} 
+                        />
+                    )
+                ) : loading ? (
                     <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 space-y-8">
                         <div className="relative">
                             <div className="w-24 h-24 rounded-full bg-indigo-50 flex items-center justify-center">
@@ -247,6 +280,15 @@ function App() {
                     </div>
                 ) : (
                     <AnimatePresence mode="wait">
+                        {/* Auth Step */}
+                        {step === -1 && (
+                            <Login 
+                                key="login" 
+                                onLogin={(u) => { setUser(u); setStep(0); }} 
+                                onSkip={() => setStep(0)} 
+                            />
+                        )}
+
                         {/* Step 0: Homepage */}
                         {step === 0 && <Homepage key="home" onStart={handleNext} />}
 
@@ -335,7 +377,7 @@ function App() {
                 <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-12">
                     <div className="space-y-4">
                         <div className="flex items-center">
-                            <img src="/luna_dark.png" className="h-10 w-auto object-contain" alt="Luna AI" />
+                            <span className="text-xl font-black text-white">Career Compass</span>
                         </div>
                         <p className="text-slate-400 text-sm leading-relaxed">
                             Empowering students through intelligent AI-driven career guidance and academic roadmaps.
@@ -348,8 +390,13 @@ function App() {
                         <a href="#" className="text-slate-400 hover:text-white transition-colors">About</a>
                     </div>
                     <div className="text-right flex flex-col items-center md:items-end justify-center">
-                        <p className="text-slate-400 text-sm mb-2">© {new Date().getFullYear()} LUNA AI</p>
-                        <p className="text-xs text-slate-500 italic">Designed with precision for future leaders.</p>
+                        <p className="text-slate-400 text-sm mb-2">© {new Date().getFullYear()} CAREER COMPASS</p>
+                        <button 
+                            onClick={() => setIsAdminMode(true)}
+                            className="text-xs text-slate-500 italic hover:text-indigo-400 transition-colors"
+                        >
+                            Designed with precision for future leaders.
+                        </button>
                     </div>
                 </div>
             </footer>
