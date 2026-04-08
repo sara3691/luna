@@ -21,7 +21,7 @@ export const CareerRecommendations: React.FC<Props> = ({ recommendations, isFall
                     className="inline-flex items-center gap-2 px-4 md:px-5 py-2 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[10px] md:text-xs font-black uppercase tracking-widest mb-6 border border-indigo-100 dark:border-indigo-800"
                 >
                     <Sparkles size={14} className="fill-current" />
-                    <span>LUNA AI Analysis Results</span>
+                    <span>Career Compass Analysis Results</span>
                 </motion.div>
                 <h2 className="text-3xl md:text-5xl lg:text-7xl font-extrabold mb-4 md:mb-6 gradient-text tracking-tighter leading-tight">
                     Your Career Paths

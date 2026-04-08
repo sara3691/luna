@@ -117,7 +117,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin, onBack }) => {
                 
                 <div className="mt-8 flex items-center justify-center gap-2 text-slate-400 dark:text-slate-600 font-bold text-xs uppercase tracking-widest">
                     <LayoutDashboard className="w-3 h-3" />
-                    <span>LUNA V2.5.0-ADMIN</span>
+                    <span>CAREER COMPASS V2.5.0-ADMIN</span>
                 </div>
             </motion.div>
         </div>

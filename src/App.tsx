@@ -184,11 +184,10 @@ function App() {
             <header className="sticky-nav py-3 md:py-4 px-4 md:px-12 flex justify-between items-center backdrop-blur-md">
                 <div className="flex items-center cursor-pointer" onClick={() => { handleRestart(); setIsMenuOpen(false); }}>
                     <img
-                        src={theme === 'light' ? "/luna_light.png" : "/luna_dark.png"}
+                        src={theme === 'light' ? "/logo_light.png" : "/logo_dark.png"}
                         className="h-10 md:h-11 w-auto object-contain transition-all duration-300"
                         alt="Career Compass"
                     />
-                    <span className="hidden md:block ml-3 text-xl font-black gradient-text">Career Compass</span>
                 </div>
 
                 <nav className="flex items-center gap-2 md:gap-10">

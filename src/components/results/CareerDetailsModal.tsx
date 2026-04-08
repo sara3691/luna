@@ -45,6 +45,8 @@ export const CareerDetailsModal: React.FC<Props> = ({ recommendation, userData, 
         fetchColleges();
     }, [recommendation?.title, userData.location.state, userData.location.studyAbroad]);
 
+    const [showFullEligibility, setShowFullEligibility] = useState(false);
+
     if (!recommendation) return null;
 
     return (
@@ -89,7 +91,7 @@ export const CareerDetailsModal: React.FC<Props> = ({ recommendation, userData, 
 
                         <div className="p-6 md:p-12 space-y-10 md:space-y-16">
                             {/* Stats Bar */}
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 items-start">
                                 <div className="p-4 md:p-6 bg-slate-50 dark:bg-slate-800/50 rounded-2xl md:rounded-3xl border border-slate-100 dark:border-slate-700/50">
                                     <p className="text-[9px] md:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1 md:mb-2">Duration</p>
                                     <p className="text-lg md:text-2xl font-bold text-slate-900 dark:text-white">{recommendation.duration}</p>
@@ -98,10 +100,21 @@ export const CareerDetailsModal: React.FC<Props> = ({ recommendation, userData, 
                                     <p className="text-[9px] md:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1 md:mb-2">Avg. Salary</p>
                                     <p className="text-lg md:text-2xl font-bold text-slate-900 dark:text-white">{recommendation.averageSalary}</p>
                                 </div>
-                                <div className="p-4 md:p-6 bg-indigo-50 dark:bg-indigo-900/30 rounded-2xl md:rounded-3xl border border-indigo-100 dark:border-indigo-800">
+                                <motion.div 
+                                    layout
+                                    onMouseEnter={() => setShowFullEligibility(true)}
+                                    onMouseLeave={() => setShowFullEligibility(false)}
+                                    onClick={() => setShowFullEligibility(!showFullEligibility)}
+                                    className="p-4 md:p-6 bg-indigo-50 dark:bg-indigo-900/30 rounded-2xl md:rounded-3xl border border-indigo-100 dark:border-indigo-800 cursor-pointer relative overflow-hidden transition-colors group hover:bg-indigo-100 dark:hover:bg-indigo-900/50"
+                                >
                                     <p className="text-[9px] md:text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-1 md:mb-2">Eligibility</p>
-                                    <p className="text-base md:text-lg font-bold text-indigo-900 dark:text-indigo-200 line-clamp-1">{recommendation.eligibility}</p>
-                                </div>
+                                    <motion.p 
+                                        layout
+                                        className={`text-base md:text-lg font-bold text-indigo-900 dark:text-indigo-200 ${showFullEligibility ? '' : 'line-clamp-1'}`}
+                                    >
+                                        {recommendation.eligibility}
+                                    </motion.p>
+                                </motion.div>
                             </div>
 
                             {/* Main Content Grid */}
