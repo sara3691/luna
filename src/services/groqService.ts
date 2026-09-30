@@ -1,9 +1,18 @@
-import { UserData, CareerRecommendation, ScholarshipResult, CourseDetail, CollegeRecommendationResult } from "../types";
+import {
+    UserData,
+    CareerRecommendation,
+    ScholarshipResult,
+    CourseDetail,
+    CollegeRecommendationResult
+} from "../types";
 
-// ─── Groq Direct API (called from browser, no Netlify function needed) ────────
+// ─── Groq Direct API ──────────────────────────────────────────────────────────
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
-// Read from Vite env (must prefix with VITE_)
+// Current supported Groq model
+const GROQ_MODEL = 'openai/gpt-oss-120b';
+
+// Read from Vite env
 const GROQ_API_KEYS = [
     import.meta.env.VITE_GROQ_API_KEY as string,
     import.meta.env.VITE_GROQ_API_KEY_2 as string,
@@ -12,8 +21,13 @@ const GROQ_API_KEYS = [
 
 const SERP_API_KEY = import.meta.env.VITE_SERP_API_KEY as string;
 
+
 // ── Career Recommendations via Groq ──────────────────────────────────────────
-export async function getCareerRecommendations(userData: UserData): Promise<CareerRecommendation[]> {
+
+export async function getCareerRecommendations(
+    userData: UserData
+): Promise<CareerRecommendation[]> {
+
     if (GROQ_API_KEYS.length === 0) {
         throw new Error('No valid VITE_GROQ_API_KEY set in .env');
     }
@@ -38,9 +52,12 @@ Act as an expert Indian Career Counselor. Analyze this student profile:
 - Anywhere in India: ${userData.location?.anywhereInIndia ? 'Yes' : 'No'}
 ${courseHint}
 
-Suggest 4-5 realistic career paths. For each, mention government scholarships available based on category and income.
+Suggest 4-5 realistic career paths.
+
+For each, mention government scholarships available based on category and income.
 
 Return ONLY valid JSON:
+
 {
   "recommendations": [
     {
@@ -50,11 +67,28 @@ Return ONLY valid JSON:
       "eligibility": "Academic requirements + entrance exams",
       "duration": "X Years",
       "averageSalary": "₹X - ₹Y LPA",
-      "topColleges": ["College 1", "College 2", "College 3"],
-      "careerPath": ["Step 1", "Step 2", "Step 3", "Step 4"],
-      "tags": ["tag1", "tag2"],
+      "topColleges": [
+        "College 1",
+        "College 2",
+        "College 3"
+      ],
+      "careerPath": [
+        "Step 1",
+        "Step 2",
+        "Step 3",
+        "Step 4"
+      ],
+      "tags": [
+        "tag1",
+        "tag2"
+      ],
       "governmentScholarships": [
-        { "name": "Scholarship", "provider": "Ministry/Dept", "eligibility": "Who can apply", "amount": "₹X/year" }
+        {
+          "name": "Scholarship",
+          "provider": "Ministry/Dept",
+          "eligibility": "Who can apply",
+          "amount": "₹X/year"
+        }
       ]
     }
   ]
@@ -64,62 +98,122 @@ Return ONLY valid JSON:
 
     // Try each API key until one works
     for (const apiKey of GROQ_API_KEYS) {
+
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 30000);
+
+        const timeout = setTimeout(() => {
+            controller.abort();
+        }, 30000);
 
         try {
+
             const response = await fetch(GROQ_API_URL, {
                 method: 'POST',
+
                 headers: {
                     'Authorization': `Bearer ${apiKey}`,
                     'Content-Type': 'application/json'
                 },
+
                 body: JSON.stringify({
-                    model: 'llama-3.3-70b-versatile',
-                    messages: [{ role: 'user', content: prompt }],
-                    response_format: { type: 'json_object' },
+                    // ✅ FIXED MODEL
+                    model: GROQ_MODEL,
+
+                    messages: [
+                        {
+                            role: 'user',
+                            content: prompt
+                        }
+                    ],
+
+                    response_format: {
+                        type: 'json_object'
+                    },
+
                     temperature: 0.7,
                     max_tokens: 4096
                 }),
+
                 signal: controller.signal
             });
 
             clearTimeout(timeout);
 
             if (!response.ok) {
-                const err = await response.json().catch(() => ({}));
-                const errMsg = err?.error?.message || `Groq API Error: ${response.status}`;
-                console.warn(`API Key failed: ${errMsg}. Trying next key if available...`);
+
+                const err = await response
+                    .json()
+                    .catch(() => ({}));
+
+                const errMsg =
+                    err?.error?.message ||
+                    `Groq API Error: ${response.status}`;
+
+                console.warn(
+                    `API Key failed: ${errMsg}. Trying next key if available...`
+                );
+
                 lastError = new Error(errMsg);
-                continue; // Try next key
+
+                continue;
             }
 
             const data = await response.json();
-            const content = data.choices?.[0]?.message?.content;
-            if (!content) throw new Error('Empty response from Groq');
+
+            const content =
+                data.choices?.[0]?.message?.content;
+
+            if (!content) {
+                throw new Error('Empty response from Groq');
+            }
 
             const parsed = JSON.parse(content);
-            if (!parsed.recommendations || !Array.isArray(parsed.recommendations)) {
-                throw new Error('Invalid JSON format from Groq');
+
+            if (
+                !parsed.recommendations ||
+                !Array.isArray(parsed.recommendations)
+            ) {
+                throw new Error(
+                    'Invalid JSON format from Groq'
+                );
             }
+
             return parsed.recommendations;
 
         } catch (error: any) {
+
             clearTimeout(timeout);
+
             if (error.name === 'AbortError') {
-                lastError = new Error('Request timed out. Trying next key if available...');
+
+                lastError = new Error(
+                    'Request timed out. Trying next key if available...'
+                );
+
             } else {
+
                 lastError = error;
             }
-            console.warn(`API call failed: ${lastError?.message}. Trying next key if available...`);
-            continue; // Try next key
+
+            console.warn(
+                `API call failed: ${lastError?.message}. Trying next key if available...`
+            );
+
+            continue;
         }
     }
 
-    throw lastError || new Error('All API keys failed. Please check your credentials or try again later.');
+    throw (
+        lastError ||
+        new Error(
+            'All API keys failed. Please check your credentials or try again later.'
+        )
+    );
 }
 
-// ── SERP: Scholarship & Course Details Search ─────────────────────────────────
+
+// ── SERP: Scholarship & Course Details Search ────────────────────────────────
+
 export interface SerpSearchResult {
     scholarships: ScholarshipResult[];
     courseDetails: CourseDetail[];
@@ -131,11 +225,19 @@ export async function searchScholarshipsAndCourses(
     state: string,
     income: string
 ): Promise<SerpSearchResult> {
-    if (!SERP_API_KEY || SERP_API_KEY.includes('YOUR_')) {
-        return { scholarships: [], courseDetails: [] };
+
+    if (
+        !SERP_API_KEY ||
+        SERP_API_KEY.includes('YOUR_')
+    ) {
+        return {
+            scholarships: [],
+            courseDetails: []
+        };
     }
 
     const buildUrl = (query: string) => {
+
         const params = new URLSearchParams({
             q: query,
             api_key: SERP_API_KEY,
@@ -144,6 +246,7 @@ export async function searchScholarshipsAndCourses(
             hl: 'en',
             gl: 'in'
         });
+
         return `https://serpapi.com/search?${params.toString()}`;
     };
 
@@ -151,48 +254,89 @@ export async function searchScholarshipsAndCourses(
     const courseDetails: CourseDetail[] = [];
 
     try {
+
         // Scholarship search
-        const scholarshipQuery = `India government scholarship "${course}" ${category} ${state} site:nationalscholarship.gov.in OR site:buddy4study.com OR site:scholarships.gov.in`;
-        const sRes = await fetch(buildUrl(scholarshipQuery));
+
+        const scholarshipQuery =
+            `India government scholarship "${course}" ${category} ${state} site:nationalscholarship.gov.in OR site:buddy4study.com OR site:scholarships.gov.in`;
+
+        const sRes = await fetch(
+            buildUrl(scholarshipQuery)
+        );
+
         if (sRes.ok) {
+
             const sData = await sRes.json();
-            (sData.organic_results || []).slice(0, 5).forEach((r: any) => {
-                scholarships.push({
-                    title: r.title || '',
-                    link: r.link || '#',
-                    snippet: r.snippet || '',
-                    source: r.displayed_link || ''
+
+            (sData.organic_results || [])
+                .slice(0, 5)
+                .forEach((r: any) => {
+
+                    scholarships.push({
+                        title: r.title || '',
+                        link: r.link || '#',
+                        snippet: r.snippet || '',
+                        source: r.displayed_link || ''
+                    });
+
                 });
-            });
         }
+
     } catch (e) {
-        console.warn('Scholarship search failed:', e);
+
+        console.warn(
+            'Scholarship search failed:',
+            e
+        );
     }
+
 
     try {
+
         // Course details search
-        const courseQuery = `${course} course India fees colleges eligibility 2025`;
-        const cRes = await fetch(buildUrl(courseQuery));
+
+        const courseQuery =
+            `${course} course India fees colleges eligibility 2025`;
+
+        const cRes = await fetch(
+            buildUrl(courseQuery)
+        );
+
         if (cRes.ok) {
+
             const cData = await cRes.json();
-            (cData.organic_results || []).slice(0, 4).forEach((r: any) => {
-                courseDetails.push({
-                    title: r.title || '',
-                    link: r.link || '#',
-                    snippet: r.snippet || '',
-                    source: r.displayed_link || ''
+
+            (cData.organic_results || [])
+                .slice(0, 4)
+                .forEach((r: any) => {
+
+                    courseDetails.push({
+                        title: r.title || '',
+                        link: r.link || '#',
+                        snippet: r.snippet || '',
+                        source: r.displayed_link || ''
+                    });
+
                 });
-            });
         }
+
     } catch (e) {
-        console.warn('Course details search failed:', e);
+
+        console.warn(
+            'Course details search failed:',
+            e
+        );
     }
 
-    return { scholarships, courseDetails };
+    return {
+        scholarships,
+        courseDetails
+    };
 }
 
+
 // ── College Recommendations via Groq ─────────────────────────────────────────
-// ── College Recommendations via Groq ─────────────────────────────────────────
+
 export async function getGroqCollegeRecommendations(
     course: string,
     state: string,
@@ -202,31 +346,52 @@ export async function getGroqCollegeRecommendations(
     subjects: string,
     studyAbroad: boolean = false
 ): Promise<CollegeRecommendationResult[]> {
-    const apiKey = import.meta.env.VITE_GROQ_API_KEY_3 as string;
 
-    if (!apiKey || apiKey.includes('YOUR_')) {
-        throw new Error('VITE_GROQ_API_KEY_3 is not set in .env');
+    const apiKey =
+        import.meta.env.VITE_GROQ_API_KEY_3 as string;
+
+    if (
+        !apiKey ||
+        apiKey.includes('YOUR_')
+    ) {
+        throw new Error(
+            'VITE_GROQ_API_KEY_3 is not set in .env'
+        );
     }
 
+
     let locationStr = "";
+
     if (studyAbroad) {
-        // Here 'state' will be the country name (e.g., UK, USA, etc.)
+
         locationStr = `in ${state}`;
+
     } else if (anywhereInIndia) {
+
         locationStr = "anywhere in India";
+
     } else {
+
         locationStr = `in ${state}, India`;
     }
 
-    const eligibility = `${stream} stream (${subjects}) with ${marks}% marks`;
+
+    const eligibility =
+        `${stream} stream (${subjects}) with ${marks}% marks`;
+
 
     const prompt = `
-Act as an expert Global Academic Consultant. Provide at least 3 real and valid institutions offering "${course}" for a student looking for options ${locationStr}.
-Student Profile: ${eligibility}
+Act as an expert Global Academic Consultant.
+
+Provide at least 3 real and valid institutions offering "${course}" for a student looking for options ${locationStr}.
+
+Student Profile:
+${eligibility}
 
 Ensure the course is actually available in these colleges/universities.
 
 Return ONLY valid JSON:
+
 {
   "colleges": [
     {
@@ -235,73 +400,162 @@ Return ONLY valid JSON:
       "location": "City",
       "state": "${studyAbroad ? state : 'State in India'}",
       "isAbroad": ${studyAbroad},
-      "fees": "Estimated annual fees (e.g. ₹X Lakhs or $X)",
+      "fees": "Estimated annual fees",
       "cutoff": ${marks >= 80 ? 80 : 70},
-      "entranceExam": "Name of exam if any (e.g. JEE Main, NEET, SAT, IELTS etc.)",
-      "tags": ["Tag 1", "Tag 2"],
-      "courses": ["${course}"],
-      "chance": "High Chance" 
+      "entranceExam": "Name of exam if any",
+      "tags": [
+        "Tag 1",
+        "Tag 2"
+      ],
+      "courses": [
+        "${course}"
+      ],
+      "chance": "High Chance"
     }
   ]
 }
 
 Rules:
-1. "chance" must be one of: "High Chance", "Medium Chance", "Low Chance" based on the student's marks (${marks}%) vs typical cutoff.
-2. Provide at least 3 institutions. This is CRITICAL. If you cannot find 3 in the specific location, provide the closest top-tier alternatives globally or nationally.
-3. Return only real, existing institutions. NO placeholders.
-4. If study abroad is true, return fees in local currency or USD/INR as appropriate.`;
 
-    const fetchColleges = async (currentPrompt: string) => {
+1. "chance" must be one of:
+   "High Chance",
+   "Medium Chance",
+   "Low Chance"
+
+2. Provide at least 3 institutions.
+
+3. Return only real, existing institutions.
+
+4. Do NOT use placeholders.
+
+5. If study abroad is true, return fees in local currency or USD/INR as appropriate.
+`;
+
+
+    const fetchColleges = async (
+        currentPrompt: string
+    ) => {
+
         try {
-            const response = await fetch(GROQ_API_URL, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    model: 'llama-3.3-70b-versatile',
-                    messages: [
-                        { role: 'system', content: 'You are a professional education consultant. Always return valid JSON only.' },
-                        { role: 'user', content: currentPrompt }
-                    ],
-                    response_format: { type: 'json_object' },
-                    temperature: 0.6,
-                    max_tokens: 3000
-                })
-            });
+
+            const response = await fetch(
+                GROQ_API_URL,
+                {
+                    method: 'POST',
+
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+
+                    body: JSON.stringify({
+
+                        // ✅ FIXED MODEL
+                        model: GROQ_MODEL,
+
+                        messages: [
+                            {
+                                role: 'system',
+                                content:
+                                    'You are a professional education consultant. Always return valid JSON only.'
+                            },
+                            {
+                                role: 'user',
+                                content: currentPrompt
+                            }
+                        ],
+
+                        response_format: {
+                            type: 'json_object'
+                        },
+
+                        temperature: 0.6,
+                        max_tokens: 3000
+                    })
+                }
+            );
+
 
             if (!response.ok) {
-                const err = await response.json().catch(() => ({}));
-                throw new Error(err?.error?.message || `Groq API Error: ${response.status}`);
+
+                const err = await response
+                    .json()
+                    .catch(() => ({}));
+
+                throw new Error(
+                    err?.error?.message ||
+                    `Groq API Error: ${response.status}`
+                );
             }
+
 
             const data = await response.json();
-            const content = data.choices?.[0]?.message?.content;
-            if (!content) throw new Error('Empty response from Groq');
+
+            const content =
+                data.choices?.[0]?.message?.content;
+
+            if (!content) {
+                throw new Error(
+                    'Empty response from Groq'
+                );
+            }
+
 
             const parsed = JSON.parse(content);
-            if (!parsed.colleges || !Array.isArray(parsed.colleges)) {
-                throw new Error('Invalid JSON format from Groq');
+
+
+            if (
+                !parsed.colleges ||
+                !Array.isArray(parsed.colleges)
+            ) {
+                throw new Error(
+                    'Invalid JSON format from Groq'
+                );
             }
+
+
             return parsed.colleges as CollegeRecommendationResult[];
+
         } catch (error: any) {
-            console.error('Groq fetch error:', error);
+
+            console.error(
+                'Groq fetch error:',
+                error
+            );
+
             throw error;
         }
     };
 
+
     let result = await fetchColleges(prompt);
 
-    // If less than 3, try again with a more insistent prompt
+
+    // If less than 3, try again
     if (result.length < 3) {
-        const retryPrompt = `${prompt}\n\nIMPORTANT: Your previous response only returned ${result.length} result(s). I REQUIRE AT LEAST 3. Please research more thoroughly and return a minimum of 3 valid institutions for ${course} ${locationStr}.`;
-        const retryResult = await fetchColleges(retryPrompt);
-        // Combine if needed or just replace
-        if (retryResult.length >= result.length) {
+
+        const retryPrompt = `${prompt}
+
+IMPORTANT:
+Your previous response only returned ${result.length} result(s).
+
+I REQUIRE AT LEAST 3.
+
+Please provide a minimum of 3 valid institutions for:
+${course}
+${locationStr}.
+`;
+
+        const retryResult =
+            await fetchColleges(retryPrompt);
+
+        if (
+            retryResult.length >= result.length
+        ) {
             result = retryResult;
         }
     }
 
-    return result.slice(0, 5); // Return top 5 maximum
-}
+
+    return result.slice(0, 5);
+        }
